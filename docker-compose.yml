@@ -1,0 +1,54 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tridah-home-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - tridah-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: tridah-home-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - tridah-network
+    depends_on:
+      - app
+
+  # Optional: MySQL service (comment out if using SQLite)
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: tridah-home-mysql
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_DATABASE: ${DB_DATABASE:-tridah}
+  #     MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+  #     MYSQL_PASSWORD: ${DB_PASSWORD:-root}
+  #     MYSQL_USER: ${DB_USERNAME:-tridah}
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   networks:
+  #     - tridah-network
+
+networks:
+  tridah-network:
+    driver: bridge
+
+# Uncomment if using MySQL
+# volumes:
+#   mysql_data:
+#     driver: local
+

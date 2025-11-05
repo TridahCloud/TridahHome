@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "private": true,
+  "description": "Tridah Framework Template - Uses CDN for assets, no build process required",
+  "scripts": {
+    "test": "echo \"No npm scripts needed - using CDN for Bootstrap and Font Awesome\""
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}
