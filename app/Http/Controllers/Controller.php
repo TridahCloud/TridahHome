@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-/**
- * Base Controller
- * 
- * All controllers in this application extend this base controller.
- * Add common functionality here that should be available to all controllers.
- */
-abstract class Controller
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller as BaseController;
+
+abstract class Controller extends BaseController
 {
-    //
+    use AuthorizesRequests, ValidatesRequests;
 }

@@ -27,11 +27,23 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{{ url('/blog') }}">Blog</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="{{ url('/volunteering') }}">Volunteering</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url('/contact') }}">Contact</a>
                 </li>
+                @auth
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
+                    </li>
+                @else
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('login') }}">Login</a>
+                    </li>
+                @endauth
                 <li class="nav-item">
                     <button class="btn btn-link nav-link p-0 me-3 theme-toggle" id="themeToggle">
                         <i class="fas fa-moon"></i>

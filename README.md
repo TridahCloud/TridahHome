@@ -1,190 +1,186 @@
-# Tridah Framework Template
+# Tridah Home
 
-A modern, comprehensive Laravel framework template for building standardized applications within the Tridah nonprofit organization.
+The public homepage for **Tridah**, a 501(c)(3) nonprofit dedicated to creating free, open, and accessible digital tools.  
+This Laravel application powers [tridah.cloud](https://tridah.cloud) and highlights our mission, blog, volunteer opportunities, and contact channels.  
+It is fully open source—community members are welcome to explore, file issues, and contribute improvements.
 
-## Overview
+---
 
-This template provides everything needed to build modern applications with:
+## ✨ Key Features
 
-- **Laravel 12.x** - Latest Laravel framework
-- **Dashboard Layout** - Sleek, dark-themed dashboard with sidebar navigation
-- **Homepage Layout** - Modern landing page template
-- **Dark/Light Theme Toggle** - Seamless theme switching
-- **Bootstrap 5.3.x** - Latest Bootstrap via CDN (no build process)
-- **Font Awesome** - Professional, non-cartoon icons
-- **Zero Build Process** - Start coding immediately
-- **Fully Responsive** - Perfect on all devices
-- **Modular Architecture** - Easy to maintain and extend
+- **Mission-driven homepage** with hero messaging, platform highlights, CTA sections, and testimonials.
+- **Blog** powered by [binshops/laravel-blog](https://github.com/binshops/laravel-blog) to announce releases, updates, and stories.
+- **Volunteer & Contact forms** with spam protection (Google reCAPTCHA v3) and automated email notifications.
+- **Accessible design** using Bootstrap 5, dark/light theming, and responsive layouts tailored to Tridah’s brand.
+- **Authentication** via Laravel Breeze for team logins and blog administration.
+- **Docker-ready** environment plus Laravel Sail support for local development.
 
-## 🌐 Live Preview
+---
 
-**See it in action:** [triframe.tridah.cloud](https://triframe.tridah.cloud)
+## 🧰 Tech Stack
 
-Experience the template live with:
-- 🏠 **[Homepage](https://triframe.tridah.cloud)** - Modern landing page with dark/light theme toggle
-- 🖥️ **[Dashboard](https://triframe.tridah.cloud/dashboard)** - Sleek dashboard interface with interactive components
-- 🎨 **Interactive elements** - Toast notifications, theme switching, and smooth animations
+- [Laravel 12](https://laravel.com) (PHP 8.2)
+- [Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze) (Blade + Tailwind auth scaffolding)
+- [Vite](https://vitejs.dev/) for asset compilation
+- [Bootstrap 5.3](https://getbootstrap.com) & [Font Awesome 6](https://fontawesome.com)
+- [binshops/laravel-blog](https://github.com/binshops/laravel-blog) for blog management
+- [Google reCAPTCHA v3](https://developers.google.com/recaptcha) for form protection
 
-## Requirements
+---
 
-- PHP >= 8.2
+## 🚀 Getting Started
+
+### Requirements
+
+- PHP **8.2+**
 - Composer
-- (No Node.js required - using CDN for all frontend assets)
+- Node.js **18+** (for Vite builds)
+- SQLite (default) or MySQL/MariaDB
+- Optional: Docker / Docker Compose (for Sail)
 
-**OR** use Docker (recommended for local development):
-- Docker Desktop (or Docker Engine + Docker Compose)
+### 1. Clone & install dependencies
 
-## Quick Start
-
-### Option 1: Docker (Recommended)
-
-The easiest way to get started is using Docker:
-
-**Windows:**
 ```bash
-docker-start.bat
+git clone https://github.com/TridahCloud/TridahHome.git
+cd TridahHome
+
+composer install
+npm install
 ```
 
-**Mac/Linux:**
+### 2. Environment setup
+
 ```bash
-docker-compose up -d --build
-docker-compose exec app composer install
-docker-compose exec app php artisan key:generate
-docker-compose exec app php artisan migrate
+cp .env.example .env
+php artisan key:generate
 ```
 
-Then open your browser to `http://localhost:8000`
+Update `.env` with your local settings:
 
-For detailed Docker instructions, see [DOCKER.md](DOCKER.md)
+```ini
+APP_ENV=local
+APP_URL=http://localhost:8000
+DB_CONNECTION=sqlite   # or mysql
+# DB_DATABASE, DB_USERNAME, DB_PASSWORD if using MySQL
 
-### Option 2: Local PHP
+# Blog admin seeding
+BLOG_ADMIN_EMAIL=admin@example.com
+BLOG_ADMIN_NAME="Site Admin"
+BLOG_ADMIN_PASSWORD=changeme123
 
-1. **Clone or download this template**
+# Google reCAPTCHA v3
+RECAPTCHA_SITE_KEY=xxxx
+RECAPTCHA_SECRET_KEY=xxxx
 
-2. **Install dependencies:**
-   ```bash
-   composer install
-   ```
-
-3. **Configure your environment:**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-
-4. **Run migrations:**
-   ```bash
-   php artisan migrate
-   ```
-
-5. **Start the development server:**
-   ```bash
-   php -S 127.0.0.1:8000 -t public
-   ```
-   
-   Or use the helper script (Windows):
-   ```bash
-   start-server.bat
-   ```
-
-## Available Templates
-
-### 🖥️ Dashboard Layout
-Use for authenticated application pages:
-```blade
-@extends('layouts.dashboard')
+# Mail delivery (Mailgun / SMTP / Resend / etc.)
+MAIL_MAILER=log
 ```
 
-**Features:**
-- Fixed sidebar navigation
-- Top header with search and user profile
-- Month summary at bottom
-- Perfect for admin dashboards, analytics, etc.
+### 3. Database setup
 
-### 🏠 Homepage Layout  
-Use for landing and marketing pages:
-```blade
-@extends('layouts.homepage')
+```bash
+php artisan migrate --seed
 ```
 
-**Features:**
-- Hero sections with CTAs
-- Feature showcases
-- About sections
-- Footer with links
+Running the seeder will create (or update) the blog admin account described in your `.env`. Log in at `/login` with the same email and password.
 
-## Available Commands
+### 4. Build assets & run the app
 
-- `php -S 127.0.0.1:8000 -t public` - Start development server
-- `start-server.bat` - Quick start (Windows batch file)
-- `php artisan migrate` - Run database migrations
-- `php artisan key:generate` - Generate application key
-- `php artisan storage:link` - Create storage symlink
-- `php artisan tinker` - Open Laravel REPL
+```bash
+npm run build    # or npm run dev for hot reload
+php artisan serve
+```
 
-## Project Structure
+Visit `http://localhost:8000` for the homepage, `http://localhost:8000/blog` for the public blog, and `http://localhost:8000/blog_admin` for the blog dashboard once authenticated.
+
+---
+
+## 🐳 Using Laravel Sail (Docker)
+
+If you prefer containers:
+
+```bash
+composer require laravel/sail --dev
+php artisan sail:install
+./vendor/bin/sail up -d
+
+./vendor/bin/sail artisan migrate --seed
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run build
+```
+
+The application will be available at `http://localhost`.
+
+---
+
+## 📁 Project Structure (Highlights)
 
 ```
-app/                    # Laravel application
-├── Http/Controllers/    # Application controllers
-├── Models/              # Eloquent models
-└── Providers/          # Service providers
+app/
+├── Http/Controllers/           # Site controllers (Contact, Auth, etc.)
+├── Mail/                       # Contact form mailers
+├── Models/User.php             # Includes blog admin helper
 
 resources/views/
-├── layouts/             # Main layout templates
-│   ├── dashboard.blade.php
-│   └── homepage.blade.php
-├── partials/            # Reusable components
-│   ├── sidebar.blade.php
-│   ├── header.blade.php
-│   ├── navbar.blade.php
-│   └── footer.blade.php
-├── dashboard/          # Dashboard views
-│   └── index.blade.php
-└── home.blade.php      # Homepage view
+├── layouts/                    # homepage + dashboard + blog layouts
+├── home.blade.php              # Main homepage content
+├── contact.blade.php           # Contact form & FAQ
+├── volunteering.blade.php      # Volunteer opportunities
+└── vendor/binshopsblog/        # Overridden blog templates
+
+routes/
+├── web.php                     # Public + auth routes
+└── auth.php                    # Breeze authentication routes
 
 public/
-├── css/
-│   ├── dashboard.css    # Dashboard styles
-│   └── homepage.css     # Homepage styles
-├── js/
-│   └── theme-toggle.js  # Theme switching
-└── images/             # Static images (logos, etc.)
-
-database/               # Migrations, factories, seeders
-routes/                  # Route definitions
-tests/                   # Feature and unit tests
+├── css/homepage.css            # Main site styles
+├── css/dashboard.css           # Dashboard styles
+├── binshops-blog.css           # Published blog assets
+└── blog_images/                # Blog uploads (gitignored)
 ```
 
-## Customization
+---
 
-### Branding
-- Replace `public/images/tridah icon.png` with your logo
-- Update brand colors in CSS files:
-  - Teal: `#31d8b2`
-  - Blue: `#204e7e`
-  - Amber: `#ffa91e`
+## 🔧 Configuration Reference
 
-### Extending
-This template serves as a foundation for:
-- Authentication systems
-- CRUD operations
-- API endpoints
-- Custom components
-- Third-party integrations
-- Any Laravel application needs
+| Setting | Description |
+| --- | --- |
+| `BLOG_ADMIN_*` | Used by the seeder to provision the initial blog admin. |
+| `RECAPTCHA_*` | Enables Google reCAPTCHA v3 on the contact form. |
+| `MAIL_*` | Configure outbound email (team notifications + auto replies). |
+| `binshopsblog.php` | Package configuration (pagination, uploads, comments, etc.). |
 
-## Documentation
+After editing configuration, remember:
 
-### Live Demo
-- **Official Live Site:** [triframe.tridah.cloud](https://triframe.tridah.cloud)
+```bash
+php artisan config:clear
+php artisan cache:clear
+```
 
-### External Resources
-- **Tridah Website:** [tridah.cloud](https://tridah.cloud)
-- **Laravel Docs:** [laravel.com/docs](https://laravel.com/docs)
-- **Bootstrap 5.3:** [getbootstrap.com](https://getbootstrap.com/docs/5.3/)
-- **Font Awesome:** [fontawesome.com](https://fontawesome.com)
+---
 
-## License
+## 🤝 Contributing
 
-This project is licensed under the MIT license.
+We welcome pull requests that improve design, accessibility, copywriting, or functionality. To get started:
+
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/my-improvement`.
+3. Run tests / static analysis if applicable.
+4. Submit a pull request with a clear description and screenshots (if UI changes).
+
+Need inspiration? Check the [issue tracker](../../issues) or open an issue to discuss ideas.
+
+---
+
+## 📬 Contact
+
+- **Website:** [tridah.cloud](https://tridah.cloud)
+- **Email:** team@tridah.cloud
+- **GitHub:** [@TridahCloud](https://github.com/TridahCloud)
+
+---
+
+## 📄 License
+
+This project is open sourced under the [MIT License](LICENSE).  
+Feel free to use, adapt, and contribute—credit is appreciated but not required.

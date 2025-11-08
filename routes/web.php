@@ -1,42 +1,28 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('home');
-});
-
-Route::get('/about', function () {
-    return view('about');
-});
-
-Route::get('/board', function () {
-    return view('board');
-});
-
-Route::get('/volunteering', function () {
-    return view('volunteering');
-});
-
-Route::get('/contact', function () {
-    return view('contact');
-});
+Route::view('/', 'home')->name('home');
+Route::view('/about', 'about')->name('about');
+Route::view('/board', 'board')->name('board');
+Route::view('/volunteering', 'volunteering')->name('volunteering');
+Route::view('/contact', 'contact')->name('contact');
+Route::view('/privacy', 'privacy')->name('privacy');
+Route::view('/terms', 'terms')->name('terms');
+Route::view('/open-source', 'open-source')->name('open-source');
 
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
-Route::get('/privacy', function () {
-    return view('privacy');
-});
-
-Route::get('/terms', function () {
-    return view('terms');
-});
-
-Route::get('/open-source', function () {
-    return view('open-source');
-});
-
 Route::get('/dashboard', function () {
-    return view('dashboard.index');
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+require __DIR__ . '/auth.php';
