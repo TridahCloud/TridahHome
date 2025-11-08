@@ -50,6 +50,7 @@
                     
                     <form id="contactForm" method="POST" action="{{ route('contact.store') }}" class="position-relative" style="z-index: 10;">
                         @csrf
+                        <input type="hidden" name="g-recaptcha-response" id="recaptchaToken">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="name" class="form-label">Your Name</label>
@@ -492,23 +493,68 @@
 </style>
 
 @push('scripts')
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.key') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle contact form submission with loading state
     const contactForm = document.getElementById('contactForm');
-    
-    if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
-            const submitButton = contactForm.querySelector('button[type="submit"]');
-            const originalText = submitButton.innerHTML;
-            
-            // Show loading state
+
+    if (!contactForm) {
+        return;
+    }
+
+    const submitButton = contactForm.querySelector('button[type="submit"]');
+    const originalText = submitButton ? submitButton.innerHTML : '';
+    const recaptchaSiteKey = "{{ config('services.recaptcha.key') }}";
+    const recaptchaField = document.getElementById('recaptchaToken');
+
+    contactForm.addEventListener('submit', function(e) {
+        if (contactForm.dataset.recaptchaVerified === 'true') {
+            contactForm.dataset.recaptchaVerified = 'false';
+            return;
+        }
+
+        e.preventDefault();
+
+        if (submitButton) {
             submitButton.disabled = true;
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
-            
-            // Form will submit normally to the server
+        }
+
+        if (!recaptchaSiteKey) {
+            contactForm.dataset.recaptchaVerified = 'true';
+            contactForm.submit();
+            return;
+        }
+
+        if (typeof grecaptcha === 'undefined') {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            }
+            alert('reCAPTCHA failed to load. Please refresh and try again.');
+            return;
+        }
+
+        grecaptcha.ready(function() {
+            grecaptcha.execute(recaptchaSiteKey, { action: 'contact' })
+                .then(function(token) {
+                    if (recaptchaField) {
+                        recaptchaField.value = token;
+                    }
+
+                    contactForm.dataset.recaptchaVerified = 'true';
+                    contactForm.submit();
+                })
+                .catch(function() {
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalText;
+                    }
+                    contactForm.dataset.recaptchaVerified = 'false';
+                    alert('We could not verify you are human. Please try again.');
+                });
         });
-    }
+    });
 });
 </script>
 @endpush
