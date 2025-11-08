@@ -1,29 +1,34 @@
-@if(\Auth::check() && \Auth::user()->canManageBinshopsBlogPosts())
-    <a href="{{$post->edit_url()}}" class="btn btn-outline-secondary btn-sm pull-right float-right">Edit
-        Post</a>
+<div class="d-flex justify-content-between align-items-start mb-4 gap-3 flex-wrap">
+    <div>
+        <h1 class="display-5 mb-2">{{$post->title}}</h1>
+        @if(!empty($post->subtitle))
+            <p class="lead mb-3 text-muted">{{$post->subtitle}}</p>
+        @endif
+    </div>
+    @if(\Auth::check() && \Auth::user()->canManageBinshopsBlogPosts())
+        <a href="{{$post->edit_url()}}" class="btn btn-outline-light btn-sm">
+            <i class="fas fa-pen me-2"></i>Edit Post
+        </a>
+    @endif
+</div>
+
+<div class="blog-meta mb-4">
+    <span><i class="fas fa-calendar me-2"></i>{{ optional($post->posted_at)->format('M d, Y') }}</span>
+    @if(optional($post->author)->name)
+        <span><i class="fas fa-user me-2"></i>{{ $post->author->name }}</span>
+    @endif
+    <span><i class="fas fa-clock me-2"></i>{{ optional($post->posted_at)->diffForHumans() }}</span>
+</div>
+
+@php $heroImage = $post->image_tag("large", false, 'img-fluid rounded-4 w-100'); @endphp
+@if(!empty($heroImage))
+    <div class="blog-card-thumbnail rounded-4 overflow-hidden mb-4">
+        {!! $heroImage !!}
+    </div>
 @endif
 
-<h1 class='blog_title'>{{$post->title}}</h1>
-<h5 class='blog_subtitle'>{{$post->subtitle}}</h5>
-
-
-<?=$post->image_tag("medium", false, 'd-block mx-auto'); ?>
-
-<p class="blog_body_content">
+<div class="blog-post-content">
     {!! $post->post_body_output() !!}
+</div>
 
-    {{--@if(config("binshopsblog.use_custom_view_files")  && $post->use_view_file)--}}
-    {{--                                // use a custom blade file for the output of those blog post--}}
-    {{--   @include("binshopsblog::partials.use_view_file")--}}
-    {{--@else--}}
-    {{--   {!! $post->post_body !!}        // unsafe, echoing the plain html/js--}}
-    {{--   {{ $post->post_body }}          // for safe escaping --}}
-    {{--@endif--}}
-</p>
-
-<hr/>
-
-Posted <strong>{{$post->posted_at->diffForHumans()}}</strong>
-
-@includeWhen($post->author,"binshopsblog::partials.author",['post'=>$post])
 @includeWhen($post->categories,"binshopsblog::partials.categories",['post'=>$post])

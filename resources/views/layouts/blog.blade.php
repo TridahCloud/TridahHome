@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', config('app.name')) - {{ config('app.name') }}</title>
+    <title>@yield('title', 'Blog') - {{ config('app.name') }}</title>
 
     <link rel="icon" type="image/png" href="{{ asset('images/tridah icon.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/tridah icon.png') }}">
@@ -15,6 +15,7 @@
 
     <link rel="stylesheet" href="{{ asset('css/homepage.css') }}">
     <link rel="stylesheet" href="{{ asset('css/toast.css') }}">
+    <link rel="stylesheet" href="{{ asset('binshops-blog.css') }}">
 
     @yield('blog-custom-css')
     @stack('styles')
@@ -22,7 +23,11 @@
 <body class="homepage-body">
     @include('partials.navbar')
 
-    @yield('content')
+    <main class="blog-page">
+        <div class="container blog-container">
+            @yield('content')
+        </div>
+    </main>
 
     @include('partials.footer')
     @include('partials.toast-container')

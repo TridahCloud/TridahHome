@@ -1,49 +1,64 @@
-@extends("layouts.blog",['title'=>$title])
-@section("content")
+@extends('layouts.blog')
 
-    <div class='row'>
-        <div class='col-sm-12'>
-            <div class="row">
-                <div class="col-md-9">
-                    <h2>Search Results for {{$query}}</h2>
+@section('title', 'Search results')
 
-                    @php $search_count = 0;@endphp
-                    @forelse($search_results as $result)
-                        @if(isset($result->indexable))
-                            @php $search_count += $search_count + 1; @endphp
-                            <?php $post = $result->indexable; ?>
-                            @if($post && is_a($post,\BinshopsBlog\Models\BinshopsBlogPost::class))
-                                <h2>Search result #{{$search_count}}</h2>
-                                @include("binshopsblog::partials.index_loop")
-                            @else
+@section('content')
+    @php
+        $matchingPosts = collect($search_results ?? [])
+            ->filter(function ($result) {
+                return isset($result->indexable) && $result->indexable instanceof \BinshopsBlog\Models\BinshopsBlogPost;
+            })
+            ->map(function ($result) {
+                return $result->indexable;
+            })
+            ->values();
+    @endphp
 
-                                <div class='alert alert-danger'>Unable to show this search result - unknown type</div>
-                            @endif
-                        @endif
-                    @empty
-                        <div class='alert alert-danger'>Sorry, but there were no results!</div>
-                    @endforelse
-                </div>
-                <div class="col-md-3">
-                    <h6>Blog Categories</h6>
-                    @forelse($categories as $category)
-                        <a href="{{$category->url()}}">
-                            <h6>{{$category->category_name}}</h6>
-                        </a>
-                    @empty
-                        <a href="#">
-                            <h6>No Categories</h6>
-                        </a>
-                    @endforelse
-                </div>
-            </div>
-
-            @if (config('binshopsblog.search.search_enabled') )
-                @include('binshopsblog::sitewide.search_form')
-            @endif
-
-        </div>
+    <div class="blog-header text-center mb-5">
+        <span class="blog-badge">
+            <i class="fas fa-search me-2"></i>Blog Search
+        </span>
+        <h1 class="blog-title display-6 mt-3">Results for “{{ $query }}”</h1>
+        <p class="blog-subtitle">
+            {{ $matchingPosts->count() ? $matchingPosts->count().' result'.($matchingPosts->count() === 1 ? '' : 's').' found.' : 'We couldn’t find any posts matching that phrase.' }}
+        </p>
     </div>
 
+    <div class="row g-5 mt-0 mt-lg-4">
+        <div class="col-lg-8">
+            <div class="row g-4">
+                @forelse($matchingPosts as $post)
+                    @include('binshopsblog::partials.index_loop', ['post' => $post])
+                @empty
+                    <div class="col-12">
+                        <div class="blog-alert">
+                            Try another keyword or explore the recent stories from the Tridah team.
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+        </div>
 
+        <aside class="col-lg-4 blog-sidebar">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-layer-group me-2 brand-teal"></i>Categories
+                    </h5>
+                    <ul class="list-unstyled blog-category-list">
+                        @forelse($categories as $category)
+                            <li>
+                                <a class="blog-category-link" href="{{ $category->url() }}">
+                                    <span>{{ $category->category_name }}</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </li>
+                        @empty
+                            <li class="text-muted small">Categories coming soon.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </aside>
+    </div>
 @endsection

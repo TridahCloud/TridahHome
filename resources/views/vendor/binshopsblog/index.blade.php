@@ -1,82 +1,91 @@
-@extends("layouts.blog",['title'=>$title])
+@extends('layouts.blog')
 
-@section('blog-custom-css')
-    <link type="text/css" href="{{ asset('binshops-blog.css') }}" rel="stylesheet">
-@endsection
+@section('title', $title ?? 'Tridah Blog')
 
-@section("content")
-
-    <div class='col-sm-12 BinshopsBlog_container'>
-        @if(\Auth::check() && \Auth::user()->canManageBinshopsBlogPosts())
-            <div class="text-center">
-                <p class='mb-1'>You are logged in as a blog admin user.
-                    <br>
-                    <a href='{{route("binshopsblog.admin.index")}}'
-                       class='btn border  btn-outline-primary btn-sm '>
-                        <i class="fa fa-cogs" aria-hidden="true"></i>
-                        Go To Blog Admin Panel</a>
-                </p>
-            </div>
-        @endif
-
-        <div class="row">
-            <div class="col-md-9">
-
-                @if($category_chain)
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-md-12">
-                                @forelse($category_chain as $cat)
-                                    / <a href="{{$cat->url()}}">
-                                        <span class="cat1">{{$cat->category_name}}</span>
-                                    </a>
-                                @empty @endforelse
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                @if(isset($BinshopsBlog_category) && $BinshopsBlog_category)
-                    <h2 class='text-center'> {{$BinshopsBlog_category->category_name}}</h2>
-
-                    @if($BinshopsBlog_category->category_description)
-                        <p class='text-center'>{{$BinshopsBlog_category->category_description}}</p>
-                    @endif
-
-                @endif
-
-                <div class="container">
-                    <div class="row">
-                        @forelse($posts as $post)
-                            @include("binshopsblog::partials.index_loop")
-                        @empty
-                            <div class="col-md-12">
-                                <div class='alert alert-danger'>No posts!</div>
-                            </div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <h6>Blog Categories</h6>
-                @forelse($categories as $category)
-                    <a href="{{$category->url()}}">
-                        <h6>{{$category->category_name}}</h6>
-                    </a>
-                @empty
-                    <a href="#">
-                        <h6>No Categories</h6>
-                    </a>
-                @endforelse
-            </div>
-        </div>
-
-        <div class='text-center  col-sm-4 mx-auto'>
-            {{$posts->appends( [] )->links()}}
-        </div>
-        @if (config('binshopsblog.search.search_enabled') )
-            @include('binshopsblog::sitewide.search_form')
-        @endif
+@section('content')
+    <div class="blog-header text-center mb-5">
+        <span class="blog-badge">
+            <i class="fas fa-pen-nib me-2"></i>Tridah Blog
+        </span>
+        <h1 class="blog-title display-5 mt-3">{{ $title ?? 'Stories & Updates' }}</h1>
+        <p class="blog-subtitle">
+            Stories, release notes, and reflections from the team building ethical, accessible technology at Tridah.
+        </p>
     </div>
 
+    <div class="row g-5 mt-0 mt-lg-4">
+        <div class="col-lg-8">
+            @if(isset($BinshopsBlog_category) && $BinshopsBlog_category)
+                <div class="blog-alert mb-4">
+                    <strong>{{ $BinshopsBlog_category->category_name }}</strong>
+                    @if($BinshopsBlog_category->category_description)
+                        <div class="mt-2">{{ $BinshopsBlog_category->category_description }}</div>
+                    @endif
+                </div>
+            @endif
+
+            <div class="row g-4">
+                @forelse($posts as $post)
+                    @include('binshopsblog::partials.index_loop', ['post' => $post])
+                @empty
+                    <div class="col-12">
+                        <div class="blog-alert">
+                            No stories have been published yet. Check back soon!
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+
+            <div class="d-flex justify-content-center mt-4">
+                {{ $posts->appends([])->links() }}
+            </div>
+        </div>
+
+        <aside class="col-lg-4 blog-sidebar">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-layer-group me-2 brand-teal"></i>Categories
+                    </h5>
+                    <ul class="list-unstyled blog-category-list">
+                        @forelse($categories as $category)
+                            <li>
+                                <a class="blog-category-link" href="{{ $category->url() }}">
+                                    <span>{{ $category->category_name }}</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </li>
+                        @empty
+                            <li class="text-muted small">Categories coming soon.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+
+            @php
+                $recentPosts = \BinshopsBlog\Models\BinshopsBlogPost::orderBy('posted_at','desc')->limit(5)->get();
+            @endphp
+            @if($recentPosts->count())
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">
+                            <i class="fas fa-clock me-2 brand-teal"></i>Recent Posts
+                        </h5>
+                        <ul class="list-unstyled blog-recent-list">
+                            @foreach($recentPosts as $recent)
+                                <li>
+                                    <a class="blog-recent-link" href="{{ $recent->url() }}">
+                                        {{ $recent->title }}
+                                    </a>
+                                    <div class="small text-muted">
+                                        {{ optional($recent->posted_at)->format('M d, Y') }}
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
+        </aside>
+    </div>
 @endsection

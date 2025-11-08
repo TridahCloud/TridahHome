@@ -1,3 +1,4 @@
+/public/blog_images/
 *.log
 .DS_Store
 .env
