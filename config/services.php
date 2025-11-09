@@ -39,6 +39,8 @@ return [
         'key' => env('RECAPTCHA_SITE_KEY'),
         'secret' => env('RECAPTCHA_SECRET_KEY'),
         'score' => env('RECAPTCHA_MIN_SCORE', 0.5),
+        'project_id' => env('RECAPTCHA_PROJECT_ID'),
+        'api_key' => env('RECAPTCHA_API_KEY'),
     ],
 
 ];

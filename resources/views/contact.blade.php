@@ -493,7 +493,7 @@
 </style>
 
 @push('scripts')
-<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.key') }}"></script>
+<script src="https://www.google.com/recaptcha/enterprise.js?render={{ config('services.recaptcha.key') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const contactForm = document.getElementById('contactForm');
@@ -526,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (typeof grecaptcha === 'undefined') {
+        if (typeof grecaptcha === 'undefined' || !grecaptcha.enterprise) {
             if (submitButton) {
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
@@ -535,8 +535,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        grecaptcha.ready(function() {
-            grecaptcha.execute(recaptchaSiteKey, { action: 'contact' })
+        grecaptcha.enterprise.ready(function() {
+            grecaptcha.enterprise.execute(recaptchaSiteKey, { action: 'contact' })
                 .then(function(token) {
                     if (recaptchaField) {
                         recaptchaField.value = token;

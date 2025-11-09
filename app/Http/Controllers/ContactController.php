@@ -15,7 +15,11 @@ class ContactController extends Controller
         // Validate the form data
         $recaptchaKey = config('services.recaptcha.key');
         $recaptchaSecret = config('services.recaptcha.secret');
-        $recaptchaEnabled = filled($recaptchaKey) && filled($recaptchaSecret);
+        $recaptchaProjectId = config('services.recaptcha.project_id');
+        $recaptchaApiKey = config('services.recaptcha.api_key');
+
+        $useEnterprise = filled($recaptchaKey) && filled($recaptchaProjectId) && filled($recaptchaApiKey);
+        $recaptchaEnabled = $useEnterprise || (filled($recaptchaKey) && filled($recaptchaSecret));
 
         $rules = [
             'name' => 'required|string|max:255',
@@ -39,28 +43,72 @@ class ContactController extends Controller
                     ->withInput();
             }
 
-            $recaptchaResponse = Http::asForm()->post(
-                'https://www.google.com/recaptcha/api/siteverify',
-                [
-                    'secret' => $recaptchaSecret,
-                    'response' => $token,
-                    'remoteip' => $request->ip(),
-                ]
-            );
+            if ($useEnterprise) {
+                $recaptchaResponse = Http::post(
+                    sprintf(
+                        'https://recaptchaenterprise.googleapis.com/v1/projects/%s/assessments?key=%s',
+                        $recaptchaProjectId,
+                        $recaptchaApiKey
+                    ),
+                    [
+                        'event' => [
+                            'token' => $token,
+                            'expectedAction' => 'contact',
+                            'siteKey' => $recaptchaKey,
+                        ],
+                    ]
+                );
+            } else {
+                $recaptchaResponse = Http::asForm()->post(
+                    'https://www.google.com/recaptcha/api/siteverify',
+                    [
+                        'secret' => $recaptchaSecret,
+                        'response' => $token,
+                        'remoteip' => $request->ip(),
+                    ]
+                );
+            }
 
-            if (! $recaptchaResponse->successful() || ! $recaptchaResponse->json('success')) {
+            if (! $recaptchaResponse->successful()) {
                 return back()
                     ->withErrors(['recaptcha' => 'reCAPTCHA verification failed. Please try again.'])
                     ->withInput();
             }
 
-            $recaptchaData = $recaptchaResponse->json();
-            $minScore = (float) config('services.recaptcha.score', 0.5);
+            if ($useEnterprise) {
+                $recaptchaData = $recaptchaResponse->json();
+                $minScore = (float) config('services.recaptcha.score', 0.5);
+                $tokenProperties = $recaptchaData['tokenProperties'] ?? [];
 
-            if (($recaptchaData['action'] ?? null) !== 'contact' || ($recaptchaData['score'] ?? 0) < $minScore) {
-                return back()
-                    ->withErrors(['recaptcha' => 'We could not verify your submission. Please try again.'])
-                    ->withInput();
+                if (($tokenProperties['valid'] ?? false) === false) {
+                    $reason = str_replace('_', ' ', strtolower($tokenProperties['invalidReason'] ?? 'unknown'));
+
+                    return back()
+                        ->withErrors(['recaptcha' => 'reCAPTCHA verification failed (' . $reason . '). Please try again.'])
+                        ->withInput();
+                }
+
+                if (($tokenProperties['action'] ?? null) !== 'contact'
+                    || ($recaptchaData['riskAnalysis']['score'] ?? 0) < $minScore) {
+                    return back()
+                        ->withErrors(['recaptcha' => 'We could not verify your submission. Please try again.'])
+                        ->withInput();
+                }
+            } else {
+                $recaptchaData = $recaptchaResponse->json();
+                $minScore = (float) config('services.recaptcha.score', 0.5);
+
+                if (! ($recaptchaData['success'] ?? false)) {
+                    return back()
+                        ->withErrors(['recaptcha' => 'reCAPTCHA verification failed. Please try again.'])
+                        ->withInput();
+                }
+
+                if (($recaptchaData['action'] ?? null) !== 'contact' || ($recaptchaData['score'] ?? 0) < $minScore) {
+                    return back()
+                        ->withErrors(['recaptcha' => 'We could not verify your submission. Please try again.'])
+                        ->withInput();
+                }
             }
         }
 
